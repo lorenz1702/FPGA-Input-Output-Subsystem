@@ -1,0 +1,74 @@
+\documentclass[11pt,a4paper]{article}
+
+% Pakete für Sprache und Kodierung
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel} % Auf 'english' ändern, falls der Report auf Englisch sein soll
+
+% Paket für Code-Listings im Anhang
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Seitenränder anpassen (hilft, die 1-Seiten-Vorgabe gut zu nutzen)
+\usepackage{geometry}
+\geometry{a4paper, left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+% --- TITELBLATT ---
+\title{Advanced Computer Architecture 2026 \\ 
+\large HW \#3.1-FPGA, Input/Output Subsystem - Interrupt-driven IO}
+
+\author{
+  Mistura Arcoverde Cavalcanti, Tarik \\ \small Matrikelnummer: TODO
+  \and
+  Neumann, Christopher Kaspar Leon \\ \small Matrikelnummer: TODO
+  \and
+  Scherrer, Lorenz \\ \small Matrikelnummer: 4749927
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% --- TEIL 1: KONZEPTIONELLER UNTERSCHIED ---
+\section{Conceptual Difference between Polled and Interrupt I/O}
+
+In einem Polling-basierten I/O-System fragt der Prozessor kontinuierlich den Status der Peripheriegeräte ab, was wertvolle Rechenzeit der CPU bindet. Im Gegensatz dazu...
+
+
+% --- TEIL 2: IMPLEMENTIERUNGSMETHODE ---
+\section{Implementation Methodology}
+
+
+Unsere Implementierung unterteilt sich grundlegend in die initiale Polling-Logik für einfache Ausgaben und das anschließende Interrupt-getriebene Echo.
+
+Für die Ausgabe von Strings (\textit{String Print}) haben wir eine Wartelogik implementiert, die den Status des Transmit-FIFOs überprüft. Solange das FIFO voll ist, blockiert der Ablauf. Sobald wieder Platz verfügbar ist, wird das nächste Zeichen (Char) in das FIFO geschrieben und gesendet.
+
+Für die Echo-Funktion wird zunächst geprüft, ob der RX-Buffer (Receive) neue Daten anzeigt. Befinden sich empfangene Daten im Buffer, werden diese direkt ausgelesen und in das Transmit-FIFO geschrieben, um sie zurückzusenden.
+
+Um das System auf ein Interrupt-gesteuertes Modell umzustellen und die \texttt{while}-Schleife zu entlasten, haben wir die MicroBlaze-Vorlage aus Moodle integriert. Diese Vorlage diente als Basis, um die Interrupt Service Routine (ISR) korrekt zu definieren und den Prozessor so zu konfigurieren, dass er auf eingehende UART-Interrupts reagiert, anstatt den Status aktiv abfragen zu müssen.
+
+
+% --- ANHANG: CODE ---
+\newpage
+\appendix
+\section{Code}
+% TODO: Hier fügt ihr euren C-Code ein. 
+% Die Einstellungen für 'listings' machen den Code lesbarer.
+
+\lstset{
+    language=C,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    breaklines=true,
+    frame=single
+}
+
+\lstinputlisting[language=C]{/home/lorenz/Desktop/UniHeidelberg/Semester4/ACA/src/interrupt_io/main.c}
+
+\end{document}
