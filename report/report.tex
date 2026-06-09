@@ -32,13 +32,19 @@
 
 % --- TEIL 1: KONZEPTIONELLER UNTERSCHIED ---
 \section{Conceptual Difference between Polled and Interrupt I/O}
-
+% TODO vergleichen von aca_io_system
 In einem Polling-basierten I/O-System fragt der Prozessor kontinuierlich den Status der Peripheriegeräte ab, was wertvolle Rechenzeit der CPU bindet. Im Gegensatz dazu...
 
 
 % --- TEIL 2: IMPLEMENTIERUNGSMETHODE ---
 \section{Implementation Methodology}
-
+% TODO implementation von dem interrupt methode mb_interface.h
+% das interrupt bit aus guide gelesen und in ISR abgefragt
+% und als echo ausgegeben
+% vivado interrupt verbunden
+% polled code und interrupt code in den anhang
+% status der RX überprüfen und dann das interrupt zeichen abfangen
+% 
 
 Unsere Implementierung unterteilt sich grundlegend in die initiale Polling-Logik für einfache Ausgaben und das anschließende Interrupt-getriebene Echo.
 
