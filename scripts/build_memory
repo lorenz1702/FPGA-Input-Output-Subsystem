@@ -1,7 +1,11 @@
 ################################################################
 # This is a generated script based on design: design_1
 #
-# NO PROJECT CREATION. Only force-deletes and recreates the BD.
+# KORRIGIERTE VERSION: 
+# - Kein Projekt-Creation-Block
+# - Dynamische Pfade für Wrapper
+# - Fehlende IP-Checks ergänzt
+# - "Geister-Verbindungen" (MicroBlaze) entfernt
 ################################################################
 
 namespace eval _tcl {
@@ -34,7 +38,6 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # START - BLOCK DESIGN CLEANUP & RECREATION
 ################################################################
 
-# CHANGE DESIGN NAME HERE
 variable design_name
 set design_name design_1
 
@@ -74,7 +77,7 @@ if { $run_remote_bd_flow == 1 } {
   
 } else {
 
-  # Local flow cleanup (falls nicht remote)
+  # Local flow cleanup
   set list_existing_designs [get_bd_designs -quiet $design_name]
   if { $list_existing_designs ne "" } { close_bd_design $list_existing_designs }
   
@@ -96,12 +99,15 @@ set bCheckIPsPassed 1
 ##################################################################
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
+   # KORREKTUR: AXI IP-Cores zur Liste hinzugefuegt
    set list_check_ips "\ 
 xilinx.com:ip:xlslice:1.0\
 xilinx.com:ip:c_counter_binary:12.0\
 xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:clk_wiz:6.0\
 xilinx.com:ip:processing_system7:5.5\
+xilinx.com:ip:axi_protocol_converter:2.1\
+xilinx.com:ip:axi_dwidth_converter:2.1\
 "
 
    set list_ips_missing ""
@@ -272,8 +278,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net xlslice_0_Dout  [get_bd_pins xlslice_0/Dout] \
   [get_bd_ports heartbeat]
   
-  catch { connect_bd_net [get_bd_pins mdm_1/Interrupt] [get_bd_pins microblaze_0/Interrupt] }
-
   group_bd_cells ext_memory [get_bd_cells axi_dwidth_converter_0] [get_bd_cells axi_protocol_convert_0] [get_bd_cells processing_system7_0]
   
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 ext_memory/S_AXI
@@ -299,5 +303,13 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
-make_wrapper -files [get_files ./bd/design_1/design_1.bd] -top
-add_files -norecurse ./bd/design_1/hdl/design_1_wrapper.v
+# KORREKTUR: Dynamisches Beziehen der BD-Datei fuer den Wrapper,
+# statt hardcodiert auf ./bd/design_1/... zu gehen.
+set bd_file [get_files -quiet */${design_name}.bd]
+if { $bd_file ne "" } {
+    set wrapper_path [make_wrapper -files $bd_file -top]
+    add_files -norecurse -force $wrapper_path
+    puts "INFO: Wrapper erfolgreich erstellt und zum Projekt hinzugefuegt."
+} else {
+    puts "ERROR: Konnte die Block Design Datei nicht finden, um den Wrapper zu generieren."
+}
