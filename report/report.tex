@@ -60,11 +60,11 @@ For the echo implementation with Polling, we instruct the CPU to regularly check
 
 For the echo implementation with interrupts, we setup our environment with the following steps:
 \begin{enumerate}
-\item We connected the interrupt output of the MDM to the interrupt input of the processor in Vivado, and generated a new bitstream. \item We enabled the reception of interrupts on the processor's side by calling the function ```microblaze_enable_interrupts()```. 
+\item We connected the interrupt output of the MDM to the interrupt input of the processor in Vivado, and generated a new bitstream. \item We enabled the reception of interrupts on the processor's side by calling the function \verb|microblaze_enable_interrupts()|. 
 \item We enabled the production of interrupts on the UART's side by setting bit 1 of the UART's control register.
 \end{enumerate}
 
-After this initial setup, we developed an interrupt handler, which we pass as a function pointer to ```microblaze_register_handler```. In the interrupt we verify the status of the receiver queue, similarly as in the polling case and if so, write its data into the transmitter queue, echoing the received value.
+After this initial setup, we developed an interrupt handler, which we pass as a function pointer to \verb|microblaze_register_handler|. In the interrupt we verify the status of the receiver queue, similarly as in the polling case and if so, write its data into the transmitter queue, echoing the received value.
 
 %Unsere Implementierung unterteilt sich grundlegend in die initiale Polling-Logik für einfache Ausgaben und das anschließende Interrupt-getriebene Echo.
 
