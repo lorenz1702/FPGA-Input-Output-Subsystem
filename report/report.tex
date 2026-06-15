@@ -31,9 +31,16 @@
 \maketitle
 
 % --- TEIL 1: KONZEPTIONELLER UNTERSCHIED ---
-\section{Conceptual Difference between Polled and Interrupt I/O}
-% TODO vergleichen von aca_io_system
-In einem Polling-basierten I/O-System fragt der Prozessor kontinuierlich den Status der Peripheriegeräte ab, was wertvolle Rechenzeit der CPU bindet. Im Gegensatz dazu...
+\section{Conceptual difference between Polled and Interrupt I/O}
+
+In a Polling-based I/O-System, the processor continually queries the status of the peripheral device. This spends valuable CPU processing time. On the other hand, in interrupt-based I/O-Systems, the peripheral devices can directly interrupt the processor when new data is available. This is advantageous in the scenarios where a device delivers data irregularly and in relatively small amounts. In this case the processor can focus on other tasks while there is no incoming signal.
+
+However, if a device needs to transfer a large amount of data, for example for camera or audio devices, then interrupts would be constantly dispatched. In this case DMA serves as a better alternative. The data can flow directly from the peripheral device to memory in blocks, so that the CPU does not have to intermediate every single data transfer.
+
+% Wir sollen wahrscheinlich auf Englisch abgeben
+%In einem Polling-basierten I/O-System fragt der Prozessor kontinuierlich den Status der Peripheriegeräte ab. Dadurch wird wertvolle Rechenzeit der CPU gebunden. Im Gegensatz dazu können in einem interruptbasierten I/O-System die Peripheriegeräte den Prozessor direkt unterbrechen, sobald neue Daten verfügbar sind. Dies ist vorteilhaft, wenn ein Peripheriegerät nur unregelmäßig und relativ kleine Datenmengen produziert. Der Prozessor kann sich dann in der Zwischenzeit anderen Aufgaben widmen, solange kein neues Signal vorliegt.
+
+%Wenn die Datenmenge jedoch sehr groß ist, wie zum Beispiel bei einer Kamera oder einem Audiogerät, würden ständig Interrupts ausgelöst werden. In solchen Fällen bietet sich DMA als Alternative an, da Daten direkt zwischen Peripheriegerät und Speicher übertragen werden können, ohne dass die CPU jeden einzelnen Transfer steuern muss.
 
 
 % --- TEIL 2: IMPLEMENTIERUNGSMETHODE ---
@@ -45,14 +52,27 @@ In einem Polling-basierten I/O-System fragt der Prozessor kontinuierlich den Sta
 % polled code und interrupt code in den anhang
 % status der RX überprüfen und dann das interrupt zeichen abfangen
 % 
+We have implemented echoing through the UART (Universal Asynchronous Receiver-Transmitter). With polling and interrupts. Additionally, we have implemented outputing a string that is larger than the UART's internal queue.
 
-Unsere Implementierung unterteilt sich grundlegend in die initiale Polling-Logik für einfache Ausgaben und das anschließende Interrupt-getriebene Echo.
+For printing of the string, directly writing all characters to the transfer queue fails. The string will be only partially printed, as the queue will overflow and drop the following incoming data. Therefore, it is necessary for the CPU to regularly check if the UART's queue is full by checking the bit 3 of the UART's status register. While the queue is full, the CPU idly waits until it can send the next character, as in our case there are no other tasks. 
 
-Für die Ausgabe von Strings (\textit{String Print}) haben wir eine Wartelogik implementiert, die den Status des Transmit-FIFOs überprüft. Solange das FIFO voll ist, blockiert der Ablauf. Sobald wieder Platz verfügbar ist, wird das nächste Zeichen (Char) in das FIFO geschrieben und gesendet.
+For the echo implementation with Polling, we instruct the CPU to regularly check if the receiver queue has valid data, by checking the value of the bit 0 of the UART's status register. Once that is the case, we write that data back into the transfer queue so that the character is echoed in the terminal.
 
-Für die Echo-Funktion wird zunächst geprüft, ob der RX-Buffer (Receive) neue Daten anzeigt. Befinden sich empfangene Daten im Buffer, werden diese direkt ausgelesen und in das Transmit-FIFO geschrieben, um sie zurückzusenden.
+For the echo implementation with interrupts, we setup our environment with the following steps:
+\begin{enumerate}
+\item We connected the interrupt output of the MDM to the interrupt input of the processor in Vivado, and generated a new bitstream. \item We enabled the reception of interrupts on the processor's side by calling the function ```microblaze_enable_interrupts()```. 
+\item We enabled the production of interrupts on the UART's side by setting bit 1 of the UART's control register.
+\end{enumerate}
 
-Um das System auf ein Interrupt-gesteuertes Modell umzustellen und die \texttt{while}-Schleife zu entlasten, haben wir die MicroBlaze-Vorlage aus Moodle integriert. Diese Vorlage diente als Basis, um die Interrupt Service Routine (ISR) korrekt zu definieren und den Prozessor so zu konfigurieren, dass er auf eingehende UART-Interrupts reagiert, anstatt den Status aktiv abfragen zu müssen.
+After this initial setup, we developed an interrupt handler, which we pass as a function pointer to ```microblaze_register_handler```. In the interrupt we verify the status of the receiver queue, similarly as in the polling case and if so, write its data into the transmitter queue, echoing the received value.
+
+%Unsere Implementierung unterteilt sich grundlegend in die initiale Polling-Logik für einfache Ausgaben und das anschließende Interrupt-getriebene Echo.
+
+%Für die Ausgabe von Strings (\textit{String Print}) haben wir eine Wartelogik implementiert, die den Status des Transmit-FIFOs überprüft. Solange das FIFO voll ist, blockiert der Ablauf. Sobald wieder Platz verfügbar ist, wird das nächste Zeichen (Char) in das FIFO geschrieben und gesendet.
+
+%Für die Echo-Funktion wird zunächst geprüft, ob der RX-Buffer (Receive) neue Daten anzeigt. Befinden sich empfangene Daten im Buffer, werden diese direkt ausgelesen und in das Transmit-FIFO geschrieben, um sie zurückzusenden.
+
+%Um das System auf ein Interrupt-gesteuertes Modell umzustellen und die \texttt{while}-Schleife zu entlasten, haben wir die MicroBlaze-Vorlage aus Moodle integriert. Diese Vorlage diente als Basis, um die Interrupt Service Routine (ISR) korrekt zu definieren und den Prozessor so zu konfigurieren, dass er auf eingehende UART-Interrupts reagiert, anstatt den Status aktiv abfragen zu müssen.
 
 
 % --- ANHANG: CODE ---
