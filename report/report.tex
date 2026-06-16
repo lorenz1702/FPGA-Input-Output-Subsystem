@@ -3,7 +3,7 @@
 % Pakete für Sprache und Kodierung
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[ngerman]{babel} % Auf 'english' ändern, falls der Report auf Englisch sein soll
+\usepackage[english]{babel} % Auf 'english' ändern, falls der Report auf Englisch sein soll
 
 % Paket für Code-Listings im Anhang
 \usepackage{listings}
@@ -18,9 +18,9 @@
 \large HW \#3.1-FPGA, Input/Output Subsystem - Interrupt-driven IO}
 
 \author{
-  Mistura Arcoverde Cavalcanti, Tarik \\ \small Matrikelnummer: TODO
+  Mistura Arcoverde Cavalcanti, Tarik \\ \small Matrikelnummer: 3683193
   \and
-  Neumann, Christopher Kaspar Leon \\ \small Matrikelnummer: TODO
+  Neumann, Christopher Kaspar Leon \\ \small Matrikelnummer: 4768204
   \and
   Scherrer, Lorenz \\ \small Matrikelnummer: 4749927
 }
@@ -92,9 +92,17 @@ After this initial setup, we developed an interrupt handler, which we pass as a 
     numberstyle=\tiny,
     stepnumber=1,
     breaklines=true,
-    frame=single
+    frame=single,
+    captionpos=t
 }
 
-\lstinputlisting[language=C]{/home/lorenz/Desktop/UniHeidelberg/Semester4/ACA/src/interrupt_io/main.c}
+\lstinputlisting[language=C,
+                caption={Main class with interrupts},
+                label={lst:Main}
+                ]{../src/interrupt_io/main.c}
+\lstinputlisting[language=C,
+                caption={Polling Method},
+                label={lst:Polling}
+                ]{../src/interrupt_io/polling_main.c}
 
 \end{document}
